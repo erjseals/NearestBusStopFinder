@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Vue Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-4">Bus Stops</h1>
+        <p class="lead">Nearest to you, by Eric Seals</p>
+      </div>
+    </div>
+
+    <div id="app">
+      <form>
+        <center><p>Number of stops shown:</p><input v-model="numStops" type="number" min="0" max="365" value="10"></center>
+      </form>
+      <br>
+      <div v-for="app in filteredStops" :key="app.id">
+        <div class="card">
+          <div class="card-body">
+            <h1 class="card-title"> {{app.name}} </h1>
+            <p class="card-title"> {{app.description}}</p>
+            <p class="card-title"> {{app.distance.toFixed(5)}} km</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+
+
+    //will use haversine formula
+    //Will basically copy from
+    // http://www.movable-type.co.uk/scripts/latlong.html
+    function distanceFunction(lat1,lon1,lat2,lon2){
+      //Radius of earth in km
+      let R = 6371
+      let dlat1 = toRadians(lat1)
+      let dlat2 = toRadians(lat2)
+
+      let dlat2lat1 = toRadians(Math.abs(lat2-lat1))
+      let dlon2lon1 = toRadians(Math.abs(lon2-lon1))
+
+      let a = Math.sin(dlat2lat1/2) * Math.sin(dlat2lat1/2) +
+              Math.cos(dlat1) * Math.cos(dlat2) *
+              Math.sin(dlon2lon1/2) * Math.sin(dlon2lon1/2)
+
+      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+      let d = R * c
+      return d
+    }
+    function toRadians(x){
+      return ((x*Math.PI)/180)
+    }
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        stops: [],
+        numStops: 10,
+        distance: 999999
+      },
+
+      computed: {
+        filteredStops: function() {
+          //need to sort our array
+          //using array.sort(compareFunction)
+          //compareFunction is distance between two stops
+          this.stops.sort(function(a,b){
+            return (a.distance - b.distance)
+          })
+          //slices 0 to the number of slices from array (default is 0 to 10)
+          return this.stops.slice(0,this.numStops)
+        }
+      },
+      //need to create methods because computed won't trigger on changes,
+      //but we need that sort of functionality
+      methods: {
+        findDistance: function() {
+          //need to compute the distance of every bus stop based on new location
+          for (let i = 0 ; i < this.stops.length; i++) {
+            this.stops[i].distance = distanceFunction(this.latitude, this.longitude, this.stops[i].lat, this.stops[i].lon)
+          }
+        }
+      },
+      //This pulls the json file into stops: []
+      mounted: function() {
+        fetch('https://utils.pauliankline.com/stops.json')
+        .then(function(response){
+          return response.json();
+        })
+        .then((response) => this.stops=response)
+
+        if ("geolocation" in navigator){
+          /* geolocation is available */
+          //most of this is from geolocation API
+          function success(position) {
+            this.latitude = position.coords.latitude
+            this.longitude = position.coords.longitude
+            this.findDistance()
+          }
+          function error() {
+            alert("Sorry, no position available.")
+          }
+          var options = {
+            enableHighAccuracy: true,
+            maximumAge        : 30000,
+            timeout           : 27000
+          }
+          //bind so that updated position doesn't act on the wrong values
+          navigator.geolocation.watchPosition(success.bind(this), error, options)
+        }
+        else {
+          /*geolocation IS NOT available */
+        }
+        }
+    })
+    </script>
+  </body>
+</html>
