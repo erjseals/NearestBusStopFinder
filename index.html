@@ -12,9 +12,17 @@
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
       crossorigin="anonymous"
     />
+    <style type="text/css">
+      .bg-1 {
+        background-color: #FFFFFF;
+      }
+      body {
+        background: #DCDCDC !important;
+      } /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
+    </style>
   </head>
   <body>
-    <div class="jumbotron jumbotron-fluid">
+    <div class="jumbotron bg-1 text-center">
       <div class="container">
         <h1 class="display-4">Bus Stops</h1>
         <p class="lead">Nearest to you, by Eric Seals</p>
@@ -23,15 +31,15 @@
 
     <div id="app">
       <form>
-        <center><p>Number of stops shown:</p><input v-model="numStops" type="number" min="0" max="365" value="10"></center>
+          <center><p>Number of stops:</p><input v-model="numStops" type="number" min="0" max="500" value="10"></center>
       </form>
       <br>
       <div v-for="app in filteredStops" :key="app.id">
-        <div class="card">
-          <div class="card-body">
+        <div class="card shadow p-3 mb-5 bg-white rounded">
+          <div class="card-body text-center">
             <h1 class="card-title"> {{app.name}} </h1>
             <p class="card-title"> {{app.description}}</p>
-            <p class="card-title"> {{app.distance.toFixed(5)}} km</p>
+            <p class="card-title"> {{app.distance.toFixed(4)}} km</p>
           </div>
         </div>
       </div>
