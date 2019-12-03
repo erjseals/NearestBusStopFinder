@@ -1,4 +1,4 @@
-# NearestBusStopFinder
+# Nearest Bus Stop Finder
 
 A web application to find and display the nearest bus stop in Lawrence, KS with JavaScript by pulling data from an
 available JSON file and using Vue, the GeoLocation API, and Bootstrap.
